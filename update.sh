@@ -32,11 +32,15 @@ echo "[+] Copying new folders..."
 cp -r "$AGENT" "$ADAPTIX_DIR"/AdaptixServer/extenders
 cp -r "$LISTENER" "$ADAPTIX_DIR"/AdaptixServer/extenders
 
+if [ -d "$ADAPTIX_DIR/dist/extenders/$AGENT/dist" ]; then
+    echo "[+] Removing existing folder..."
+    rm -rf "$ADAPTIX_DIR/dist/extenders/$AGENT/dist"
+fi
+
 cd $ADAPTIX_DIR
 
 echo "[+] Running make..."
-make server-ext
-make client
+make extenders
 
 cp -r "$ADAPTIX_DIR"/AdaptixServer/extenders/agent_kharon/src_beacon "$ADAPTIX_DIR"/dist/extenders/agent_kharon
 cp -r "$ADAPTIX_DIR"/AdaptixServer/extenders/agent_kharon/src_loader "$ADAPTIX_DIR"/dist/extenders/agent_kharon
