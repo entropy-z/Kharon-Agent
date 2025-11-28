@@ -401,12 +401,14 @@ auto DECLFN Kharon::Init(
         this->Config.Mask.NtContinueGadget = (UPTR)this->Ntdll.NtContinue;
     }
 
-    KhDbgz( "======== Session Informations ========" );
+    KhDbgz( "\n======== Session Informations ========" );
     KhDbgz( "Agent UUID: %s", this->Session.AgentID );
     KhDbgz( "Image Path: %s", this->Session.ImagePath );
     KhDbgz( "Command Line: %s", this->Session.CommandLine );
     KhDbgz( "Process ID: %d", this->Session.ProcessID );
-    KhDbgz( "Parent ID: %d\n", this->Session.ParentID );
+    KhDbgz( "Parent ID: %d", this->Session.ParentID );
+    KhDbgz( "Sleep Time: %d", this->Config.SleepTime );
+    KhDbgz( "Jitter Time: %d\n", this->Config.Jitter );
 
     // KhDbgz( "Encryption Key\n" );
 

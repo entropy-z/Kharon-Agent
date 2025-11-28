@@ -65,6 +65,8 @@ const (
 	CONFIG_KD_SELFDEL int = 29
 	CONFIG_KD_EXIT    int = 30
 	CONFIG_AE_BYPASS  int = 31
+	CONFIG_INJ_ALLOC  int = 32
+	CONFIG_INJ_WRITE  int = 33
 )
 
 const (

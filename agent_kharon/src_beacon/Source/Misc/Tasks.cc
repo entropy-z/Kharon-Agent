@@ -1203,9 +1203,9 @@ auto DECLFN Task::Config(
             }
             case Enm::Config::Jitter: {
                 ULONG NewJitter = Self->Psr->Int32( Parser );
-                Self->Config.SleepTime = NewJitter;
+                Self->Config.Jitter = NewJitter;
 
-                KhDbg( "new jitter set to %d", Self->Config.SleepTime ); 
+                KhDbg( "new jitter set to %d", Self->Config.Jitter ); 
                 
                 break;
             }
@@ -1220,7 +1220,7 @@ auto DECLFN Task::Config(
             case Enm::Config::Mask: {
                 INT32 TechniqueID = Self->Psr->Int32( Parser );
                 if ( 
-                    TechniqueID != eMask::Timer || 
+                    TechniqueID != eMask::Timer &&
                     TechniqueID != eMask::None 
                 ) {
                     KhDbg( "invalid mask id: %d", TechniqueID );

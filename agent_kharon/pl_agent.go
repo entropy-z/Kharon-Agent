@@ -1608,51 +1608,43 @@ func CreateTask(ts Teamserver, agent adaptix.AgentData, args map[string]any) (ad
 
 		case "inject.alloc":
 			{
-				bypass, ok := args["bypass"].(string)
+				alloc, ok := args["alloc"].(string)
 				if !ok {
-					err = errors.New("parameter 'bypass' must be set")
+					err = errors.New("parameter 'alloc' must be set")
 					goto RET
 				}
 
-				bypass_n := 0
-				if bypass == "amsi" {
-					bypass_n = 0x700
-				} else if bypass == "etw" {
-					bypass_n = 0x400
-				} else if bypass == "all" {
-					bypass_n = 0x100
-				} else if bypass == "none" {
-					bypass_n = 0x000
+				alloc_n := 0
+				if alloc == "drip" {
+					alloc_n = 1
+				} else if alloc == "standard" {
+					alloc_n = 0
 				} else {
-					err = errors.New("Unknonw bypass type. Type must be 'amsi', 'etw', 'all' or 'none'")
+					err = errors.New("Unknonw alloc type. Type must be 'drip' or 'standard'")
 					goto RET
 				}
 
-				array = []interface{}{TASK_CONFIG, 1, CONFIG_AE_BYPASS, int(bypass_n)}
+				array = []interface{}{TASK_CONFIG, 1, CONFIG_INJ_ALLOC, int(alloc_n)}
 			}
 		case "inject.write":
 			{
-				bypass, ok := args["write"].(string)
+				write, ok := args["write"].(string)
 				if !ok {
-					err = errors.New("parameter 'bypass' must be set")
+					err = errors.New("parameter 'write' must be set")
 					goto RET
 				}
 
-				bypass_n := 0
-				if bypass == "amsi" {
-					bypass_n = 0x700
-				} else if bypass == "etw" {
-					bypass_n = 0x400
-				} else if bypass == "all" {
-					bypass_n = 0x100
-				} else if bypass == "none" {
-					bypass_n = 0x000
+				write_n := 0
+				if write == "apc" {
+					write_n = 1
+				} else if write == "standard" {
+					write_n = 0
 				} else {
-					err = errors.New("Unknonw bypass type. Type must be 'amsi', 'etw', 'all' or 'none'")
+					err = errors.New("Unknonw write type. Type must be 'apc' or 'standard")
 					goto RET
 				}
 
-				array = []interface{}{TASK_CONFIG, 1, CONFIG_AE_BYPASS, int(bypass_n)}
+				array = []interface{}{TASK_CONFIG, 1, CONFIG_INJ_WRITE, int(write_n)}
 			}
 		default:
 			err = errors.New("subcommand for 'config': 'sleep', 'jitter', 'killdate', 'mask', 'blockdlls'")
