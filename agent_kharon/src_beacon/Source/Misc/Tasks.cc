@@ -1220,7 +1220,7 @@ auto DECLFN Task::Config(
             case Enm::Config::Mask: {
                 INT32 TechniqueID = Self->Psr->Int32( Parser );
                 if ( 
-                    TechniqueID != eMask::Timer || 
+                    TechniqueID != eMask::Timer &&
                     TechniqueID != eMask::None 
                 ) {
                     KhDbg( "invalid mask id: %d", TechniqueID );
