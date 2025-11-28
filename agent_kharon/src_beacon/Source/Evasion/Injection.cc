@@ -83,20 +83,37 @@ auto DECLFN Injection::Standard(
         KhDbg("Cleanup called, success=%d, BaseAddress=%p, TempAddress=%p",
                BooleanRet, BaseAddress, TempAddress);
 
+        // Success with persistence: Keep everything for later use
         if ( BooleanRet && Object->Persist ) {
             Object->BaseAddress  = BaseAddress;
             Object->ThreadHandle = ThreadHandle;
             Object->ThreadId     = ThreadId;
-            KhDbg("Persisting object: Base=%p, ThreadId=%lu", BaseAddress, ThreadId);
-        } else {
+            KhDbg("Persisting object: Base=%p, ThreadId=%lu, Thread=%p", BaseAddress, ThreadId, ThreadHandle);
+        }
+        // Success without persistence: Thread was created and needs the memory, only close handles
+        else if ( BooleanRet ) {
+            KhDbg("Injection succeeded - NOT freeing BaseAddress %p (thread needs it)", BaseAddress);
             if ( PsHandle && ! Object->PsHandle ) {
                 Self->Ntdll.NtClose( PsHandle );
                 KhDbg("Closed process handle %p", PsHandle);
             }
         }
+        // Failure: Free remote memory and close handles to prevent leaks
+        else {
+            if ( BaseAddress ) {
+                Self->Mm->Free( BaseAddress, MemSizeToZero, MEM_RELEASE, PsHandle );
+                KhDbg("Freed BaseAddress %p in remote process (cleanup after failure)", BaseAddress);
+            }
+            if ( PsHandle && ! Object->PsHandle ) {
+                Self->Ntdll.NtClose( PsHandle );
+                KhDbg("Closed process handle %p", PsHandle);
+            }
+        }
+        
+        // Always free local temporary buffer
         if ( TempAddress ) {
             Self->Mm->Free( TempAddress, FullSize, MEM_RELEASE );
-            KhDbg("Freed TempAddress %p", TempAddress);
+            KhDbg("Freed TempAddress %p (local buffer)", TempAddress);
         }
         
         return BooleanRet;
