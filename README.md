@@ -29,6 +29,18 @@ Modules can be loaded into the client using the `kh_modules.axs` script.
    `dist/extenders/listener_kharon_http/config.json`
    in `profile.json`
 
+6. Also update the go.work file inside AdaptixServer folder 
+   (the example below only shows for kharon agent, if you have other agents, their folders will also be there)
+```
+go 1.25.4
+use (
+        .
+        ./extenders/agent_kharon
+        ./extenders/listener_kharon_http
+)
+```
+> To update Kharon agent, just run the update.sh file with the root directory of AdaptixC2
+
 Example (profile.json):
 ```
 "extenders": [
