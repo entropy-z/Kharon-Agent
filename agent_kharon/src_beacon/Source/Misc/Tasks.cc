@@ -1347,6 +1347,13 @@ auto DECLFN Task::Config(
 
                 break;
             }
+            case Enm::Config::ForkPipeName: {
+                CHAR* ForkPipeName = Self->Psr->Str( Parser, nullptr );
+
+                Self->Config.Postex.ForkPipe = ForkPipeName;
+
+                KhDbg("Fork pipe name changed to: %s", Self->Config.Postex.ForkPipe);
+            }
         }
     }
 

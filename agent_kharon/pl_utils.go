@@ -68,6 +68,7 @@ const (
 	CONFIG_INJ_ALLOC  int = 32
 	CONFIG_INJ_WRITE  int = 33
 	CONFIG_SYSCALL    int = 34
+	CONFIG_FORKPIPE   int = 35
 )
 
 const (

@@ -1668,6 +1668,15 @@ func CreateTask(ts Teamserver, agent adaptix.AgentData, args map[string]any) (ad
 			}
 
 			array = []interface{}{TASK_CONFIG, 1, CONFIG_SYSCALL, int(syscall_n)}
+		case "pipe_name_fork": {
+			forkPipeName := args["name"].(string)
+			if !ok {
+				err = errors.New("parameter 'name' must be set")
+				goto RET
+			}
+
+			array = []interface{}{TASK_CONFIG, 1, CONFIG_FORKPIPE, forkPipeName}
+		}
 		default:
 			err = errors.New("subcommand for 'config': 'sleep', 'jitter', 'killdate', 'mask', 'blockdlls'")
 			goto RET
