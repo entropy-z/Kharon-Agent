@@ -1647,6 +1647,27 @@ func CreateTask(ts Teamserver, agent adaptix.AgentData, args map[string]any) (ad
 
 				array = []interface{}{TASK_CONFIG, 1, CONFIG_INJ_WRITE, int(write_n)}
 			}
+		
+		case "syscall": 
+			syscall, ok := args["syscall"].(string)
+			if !ok {
+				err = errors.New("parameter 'syscall' must be set")
+				goto RET
+			}
+
+			syscall_n := 0
+
+			if syscall == "spoof" {
+				syscall_n = 1
+			} else if syscall == "spoof_indirect" {
+				syscall_n = 2
+			} else if syscall == "none" {
+				syscall_n = 0
+			} else {
+				err = errors.New("Unknown syscall method. Syscall must be 'spoof', 'spoof_indirect' or 'none'")
+			}
+
+			array = []interface{}{TASK_CONFIG, 1, CONFIG_SYSCALL, int(syscall_n)}
 		default:
 			err = errors.New("subcommand for 'config': 'sleep', 'jitter', 'killdate', 'mask', 'blockdlls'")
 			goto RET
