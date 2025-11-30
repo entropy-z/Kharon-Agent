@@ -2335,6 +2335,7 @@ func ProcessTasksResult(ts Teamserver, agentData adaptix.AgentData, taskData ada
 
 					bof_hook := cmd_packer.ParseInt32()
 					syscall := int(cmd_packer.ParseInt32())
+					amsietwbp := int(cmd_packer.ParseInt32())
 
 					block_dlls := cmd_packer.ParseInt32()
 					parent_pid := int(cmd_packer.ParseInt32())
@@ -2385,6 +2386,19 @@ func ProcessTasksResult(ts Teamserver, agentData adaptix.AgentData, taskData ada
 							return "None"
 						default:
 							return fmt.Sprintf("%d", mask_tech_id)
+						}
+					}
+
+					amsietwbpStr := func(id int) string {
+						switch id {
+						case 0x100: 
+							return "All"
+						case 0x700:
+							return "AMSI"
+						case 0x400: 
+							return "ETW"
+						case 0x000:
+							return "None"
 						}
 					}
 
@@ -2440,6 +2454,7 @@ func ProcessTasksResult(ts Teamserver, agentData adaptix.AgentData, taskData ada
 					b.WriteString(row("", "NtContinue Gadget", fmt.Sprintf("0x%016X", ntcont_gadget)))
 					b.WriteString(row("", "BOF API Proxy", boolStr(bof_hook)))
 					b.WriteString(row("", "Syscall", syscallStr(syscall)))
+					b.WriteString(row("", "AMSI/ETW Bypass", amsietwbpStr(amsietwbp)))
 					b.WriteString(border)
 
 					// INJECTION
