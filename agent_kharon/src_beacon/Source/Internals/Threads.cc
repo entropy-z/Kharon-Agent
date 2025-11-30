@@ -75,11 +75,11 @@ auto DECLFN Thread::Create(
         );
     }
 
-    UPTR Address = (Flags & SYSCALL_INDIRECT) 
+    UPTR Address = (Flags == SYSCALL_SPOOF_INDIRECT) 
         ? (UPTR)Self->Sys->Ext[Sys::CrThread].Instruction 
         : (UPTR)Self->Ntdll.NtCreateThreadEx;
 
-    UPTR ssn = (Flags & SYSCALL_INDIRECT) 
+    UPTR ssn = (Flags == SYSCALL_SPOOF_INDIRECT) 
         ? (UPTR)Self->Sys->Ext[Sys::CrThread].ssn 
         : 0;
 
@@ -211,11 +211,11 @@ auto DECLFN Thread::QueueAPC(
         );
     }
 
-    UPTR Address = (Flags & SYSCALL_INDIRECT)
+    UPTR Address = (Flags == SYSCALL_SPOOF_INDIRECT)
         ? (UPTR)Self->Sys->Ext[Sys::QueueApc].Instruction
         : (UPTR)Self->Ntdll.NtQueueApcThread;
 
-    UPTR ssn = (Flags & SYSCALL_INDIRECT)
+    UPTR ssn = (Flags == SYSCALL_SPOOF_INDIRECT)
         ? (UPTR)Self->Sys->Ext[Sys::QueueApc].ssn
         : 0;
 
