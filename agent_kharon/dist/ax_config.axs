@@ -109,10 +109,10 @@ function RegisterCommands(listenerType)
     cmd_token_steal.addArgBool("impersonate", false, "Immediately use the stolen token");
 
     let cmd_token_use = ax.create_command("impersonate", "Apply a previously stolen access token from storage", "token impersonate 608", "Task: impersonate stored access token");
-    cmd_token_use.addArgInt("id", true);
+    cmd_token_use.addArgInt("token_id", true);
 
     let cmd_token_rm = ax.create_command("rm", "Remove an access token from storage", "token rm 608", "Task: delete stored token");
-    cmd_token_rm.addArgInt("id", true);
+    cmd_token_rm.addArgInt("token_id", true);
 
     let cmd_token_revert = ax.create_command("revert", "Restore the original access token", "token revert", "Task: revert to original token");
 
@@ -175,12 +175,15 @@ function RegisterCommands(listenerType)
     cmd_config_wkrtime.addArgString("start", true);
     cmd_config_wkrtime.addArgString("end", true);
 
+    let cmd_config_syscall = ax.create_command("syscall", "Change the syscall method", "config syscall spoof_indirect");
+    cmd_config_syscall.addArgFlagString("syscall", true, "options: 'spoof', 'spoof_indirect' or 'none'");
+
     let cmd_config = ax.create_command("config", "Configuration management - adjust beacon behavior and settings", "config sleep 50s");
     cmd_config.addSubCommands([
         cmd_config_sleep, cmd_config_jitter, cmd_config_ppid, cmd_config_blockdll, cmd_config_wkrtime,
         cmd_config_killdate_date, cmd_config_killdate_exit, cmd_config_killdate_selfdel, 
         cmd_config_heap_obf, cmd_config_mask, cmd_config_amsietwbypass, cmd_config_spawnto,
-        cmd_config_inject_write, cmd_config_inject_alloc
+        cmd_config_inject_write, cmd_config_inject_alloc, cmd_config_syscall
     ]);
 
     /// INFO
