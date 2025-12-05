@@ -682,6 +682,7 @@ func AgentGenerateBuild(agentConfig string, agentProfile []byte, listenerMap map
 			"-s",
 			"-lkernel32",
 			"-ladvapi32",
+			"-mwindows",
 		}
 
 		if cfg.Format == "Dll" {
