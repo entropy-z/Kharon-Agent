@@ -2529,6 +2529,7 @@ func ProcessTasksResult(ts Teamserver, agentData adaptix.AgentData, taskData ada
 					user_name := cmd_packer.ParseString()
 					comp_name := cmd_packer.ParseString()
 					domn_name := cmd_packer.ParseString()
+					cfg_enabled := cmd_packer.ParseInt32()
 					os_arch := cmd_packer.ParseInt8()
 					os_major := cmd_packer.ParseInt32()
 					os_minor := cmd_packer.ParseInt32()
@@ -2541,6 +2542,9 @@ func ProcessTasksResult(ts Teamserver, agentData adaptix.AgentData, taskData ada
 					killdate_mont := cmd_packer.ParseInt32()
 					killdate_year := cmd_packer.ParseInt32()
 
+
+					injection_techn := int(cmd_packer.ParseInt32())
+					injection_stomp_module := int(cmd_packer.ParseString())
 					injection_alloc := int(cmd_packer.ParseInt32())
 					injection_write := int(cmd_packer.ParseInt32())
 
@@ -2635,6 +2639,17 @@ func ProcessTasksResult(ts Teamserver, agentData adaptix.AgentData, taskData ada
 							return "Spoof + Indirect"
 						default:
 							return fmt.Sprintf("%d", syscall)
+						}
+					}
+
+					injectTechnStr := func(id int) string {
+						switch id {
+						case 0x10:
+							return "Standard"
+						case 0x20:
+							return "Stomping"
+						default:
+							return fmt.Sprintf("%d", id)
 						}
 					}
 
@@ -2806,7 +2821,9 @@ func ProcessTasksResult(ts Teamserver, agentData adaptix.AgentData, taskData ada
 					b.WriteString(border)
 
 					// INJECTION
-					b.WriteString(row("INJECTION", "Allocation Method", injectAllocStr(injection_alloc)))
+					b.WriteString(row("INJECTION", "Injection Technique", injectTechnStr(injection_techn)))
+					b.WriteString(row("", "Stomp Module", (injection_stomp_module)))
+					b.WriteString(row("", "Allocation Method", injectWriteStr(injection_alloc)))
 					b.WriteString(row("", "Write Method", injectWriteStr(injection_write)))
 					b.WriteString(border)
 
@@ -2836,6 +2853,7 @@ func ProcessTasksResult(ts Teamserver, agentData adaptix.AgentData, taskData ada
 					b.WriteString(row("SYSTEM INFO", "User Name", user_name))
 					b.WriteString(row("", "Computer Name", comp_name))
 					b.WriteString(row("", "Domain Name", domn_name))
+					b.WriteString(row("", "CFG Status", boolStr(cfg_enabled)))
 					b.WriteString(row("", "OS Arch", fmt.Sprintf("0x%02X", os_arch)))
 					b.WriteString(row("", "OS Version", osVersionStr))
 					b.WriteString(border)
