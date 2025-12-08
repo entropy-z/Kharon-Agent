@@ -43,10 +43,12 @@ type HTTPConfig struct {
 	ProxyUserName string `json:"proxy_user"`
 	ProxyPassword string `json:"proxy_pass"`
 
+	CryptKey [16]byte `json:"crypt_key"`
+
 	// server
 	ResponseHeaders map[string]string `json:"response_headers"`
 	Protocol   	    string 		      `json:"protocol"`
-	EncryptKey      []byte 			  `json:"encrypt_key"`
+	EncryptKey      []byte       	  `json:"encrypt_key"`
 	Server_headers  string 			  `json:"server_headers"`
 }
 
@@ -56,6 +58,50 @@ type HTTP struct {
 	Config    HTTPConfig
 	Name      string
 	Active    bool
+}
+
+func (handler *HTTP) getKeyFromRequest(bodyBytes []byte) []byte {    
+    var key []byte
+
+    if len(bodyBytes) < 16 {
+        fmt.Printf("request body too small: expected at least 16 bytes, got %d", len(bodyBytes))
+		return nil
+    }
+
+	key = bodyBytes[len(bodyBytes)-16:]
+	fmt.Printf("[INFO] Using key from last 16 bytes of request: %02x\n", key)
+
+    var keyArray [16]byte
+    copy(keyArray[:], key)
+    handler.Config.CryptKey = keyArray
+
+    return key
+}
+
+func (handler *HTTP) ValidateConfig() error {
+    var missing []string
+    
+    if handler.Config.Uri == "" {
+        missing = append(missing, "Uri")
+    }
+    if handler.Config.HttpMethod == "" {
+        missing = append(missing, "HTTP Method")
+    }
+    if handler.Config.HostBind == "" {
+        missing = append(missing, "host bind")
+    }
+    if handler.Config.PortBind == 0 {
+        missing = append(missing, "port bind")
+    }
+    if handler.Config.Callback_addresses == "" {
+        missing = append(missing, "callback addresses")
+    }
+    
+    if len(missing) > 0 {
+        return fmt.Errorf("incomplete configuration. Missing required fields: %s", strings.Join(missing, ", "))
+    }
+    
+    return nil
 }
 
 func (handler *HTTP) Start(ts Teamserver) error {
@@ -84,9 +130,12 @@ func (handler *HTTP) Start(ts Teamserver) error {
     
     fmt.Printf("ResponseHeaders: %v\n", cfg.ResponseHeaders)
     fmt.Printf("Protocol: %s\n", cfg.Protocol)
-    fmt.Printf("EncryptKey: %v (length: %x)\n", cfg.EncryptKey, len(cfg.EncryptKey))
     fmt.Printf("Server_headers: %s\n", cfg.Server_headers)
     fmt.Println("===================")
+
+	if err := handler.ValidateConfig(); err != nil {
+    	return err
+	}
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
@@ -260,7 +309,11 @@ func (handler *HTTP) processRequest(ctx *gin.Context) {
 	if !ModuleObject.ts.TsAgentIsExists(oldAgentId) {
 		fmt.Printf("[INFO] Creating new agent: %s\n", oldAgentId)
 
-		agentData, err := ModuleObject.ts.TsAgentCreate(agentType, oldAgentId, bodyData, handler.Name, ExternalIP, true)
+		keyOne := handler.getKeyFromRequest(bodyData)
+		cryptOne := NewLokyCrypt(keyOne, keyOne)
+		decrypted := cryptOne.Decrypt(bodyData)
+
+		agentData, err := ModuleObject.ts.TsAgentCreate(agentType, oldAgentId, decrypted, handler.Name, ExternalIP, true)
 		if err != nil {
 			fmt.Printf("[ERROR] Failed to create agent: %v\n", err)
 			goto ERR
@@ -270,9 +323,9 @@ func (handler *HTTP) processRequest(ctx *gin.Context) {
 		_, _ = rand.Read(randomId)
 		newUID := []byte(agentData.Id + hex.EncodeToString(randomId))
 
-		key := bytes.Repeat([]byte{0x50}, 16)
-		crypt := NewLokyCrypt(key, key)
-		encrypted := crypt.Encrypt(newUID)
+		keyTwo := handler.Config.CryptKey[:]
+		cryptTwo := NewLokyCrypt(keyTwo, keyTwo)
+		encrypted := cryptTwo.Encrypt(newUID)
 
 		responseData = []byte(base64.StdEncoding.EncodeToString(append(oldUID, encrypted...)))
 
@@ -281,11 +334,15 @@ func (handler *HTTP) processRequest(ctx *gin.Context) {
 
 		_ = ModuleObject.ts.TsAgentSetTick(oldAgentId)
 
-		if bodyData[0] == 0 { // Get Tasks
+		keyOne := handler.Config.CryptKey[:]
+		cryptOne := NewLokyCrypt(keyOne, keyOne)
+		decrypted := cryptOne.Decrypt(bodyData)
+
+		if decrypted[0] == 0 { // Get Tasks
 			hostedData, err := ModuleObject.ts.TsAgentGetHostedAll(oldAgentId, 0x12c0000) // 25 Mb * 0,75 for base64
 			if len(hostedData) > 0 {
 
-				key := bytes.Repeat([]byte{0x50}, 16)
+				key := handler.Config.CryptKey[:]
 				crypt := NewLokyCrypt(key, key)
 				encrypted := crypt.Encrypt(hostedData)
 
@@ -294,16 +351,16 @@ func (handler *HTTP) processRequest(ctx *gin.Context) {
 					goto ERR
 				}
 			}
-		} else if bodyData[0] == 1 { // Tasks result
+		} else if decrypted[0] == 1 { // Tasks result
 
-			_ = ModuleObject.ts.TsAgentProcessData(oldAgentId, bodyData[1:])
+			_ = ModuleObject.ts.TsAgentProcessData(oldAgentId, decrypted[1:])
 
-		} else if bodyData[0] == 5 || bodyData[0] == 7 { // QuickMsg || QuickOut
+		} else if decrypted[0] == 5 || decrypted[0] == 7 { // QuickMsg || QuickOut
 
-			_ = ModuleObject.ts.TsAgentProcessData(oldAgentId, append([]byte{0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0}, bodyData...))
+			_ = ModuleObject.ts.TsAgentProcessData(oldAgentId, append([]byte{0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x0}, decrypted...))
 
 		} else {
-			fmt.Printf("[WARN] Unknown body data type: %d\n", bodyData[0])
+			fmt.Printf("[WARN] Unknown body data type: %d\n", decrypted[0])
 		}
 	}
 
@@ -380,12 +437,7 @@ func (handler *HTTP) parseBeatAndData(ctx *gin.Context) (string, []byte, []byte,
 		return "", nil, nil, errors.New("missing agent data")
 	}
 
-	totalLen := len(agentInfoCrypt)
-	xorKey := agentInfoCrypt[totalLen-16:]
-
-	key := bytes.Repeat([]byte{0x50}, 16)
-	crypt := NewLokyCrypt(key, xorKey)
-	decryptedPart := crypt.Decrypt(agentInfoCrypt[36:])
+	decryptedPart := agentInfoCrypt[36:]
 
 	return "c17a905a", agentInfoCrypt[:36], decryptedPart, nil
 }
