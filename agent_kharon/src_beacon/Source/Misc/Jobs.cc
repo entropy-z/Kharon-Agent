@@ -194,6 +194,9 @@ auto DECLFN Jobs::ExecuteAll( VOID ) -> LONG {
 
             FlagRet = 1;
 
+            Self->Pkg->Shared = Current->Pkg;
+            Self->Psr->Shared = Current->Psr;
+
             this->CurrentUUID  = Current->UUID;
             this->CurrentCmdId = Current->CmdID;
             Current->State     = KH_JOB_RUNNING;
