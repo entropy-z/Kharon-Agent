@@ -20,5 +20,7 @@ all: clean
 
 clean:
 	@ echo "    * Cleaning build artifacts..."
-	@ rm $(OUTPUT_FILE)
+	@if [ -f "$(PLUGIN_OUT)" ]; then \
+		rm -f "$(OUTPUT_FILE)"; \
+	fi
 	@ echo "      done..."
