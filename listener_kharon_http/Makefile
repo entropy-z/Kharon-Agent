@@ -1,5 +1,45 @@
-all:
-	@ echo "    * Building listener_kharon_http plugin"
-	@ mkdir -p dist
-	@ GOEXPERIMENT=jsonv2,greenteagc go build -buildmode=plugin -ldflags="-s -w" -o ./dist/listener_kharon_http.so pl_lokycrypt.go pl_main.go pl_http.go pl_listener.go
-	@ echo "      done..."
+.PHONY: all plugin agent beacon clean help
+
+GO := go
+GOFLAGS := -buildmode=plugin -ldflags="-s -w"
+GOEXPERIMENT := jsonv2,greenteagc
+DIST_DIR := dist
+SRC_SERVER := src_server
+SRC_BEACON := src_beacon
+
+PLUGIN_FILES := \
+	$(SRC_SERVER)/pl_lokycrypt.go \
+	$(SRC_SERVER)/pl_main.go \
+	$(SRC_SERVER)/pl_agent.go \
+	$(SRC_SERVER)/pl_packer.go \
+	$(SRC_SERVER)/pl_utils.go
+
+PLUGIN_OUT := $(DIST_DIR)/agent_kharon.so
+
+all: plugin agent
+
+
+plugin: $(PLUGIN_OUT)
+
+$(PLUGIN_OUT): $(PLUGIN_FILES)
+	@echo "Building agent_kharon plugin..."
+	@mkdir -p $(DIST_DIR)
+	@GOEXPERIMENT=$(GOEXPERIMENT) $(GO) build $(GOFLAGS) \
+		-o $@ \
+		$^
+	@echo "Plugin built: $(PLUGIN_OUT)"
+
+agent: plugin
+	@echo "Building agent_kharon src code (beacon)..."
+	@$(MAKE) -C $(SRC_BEACON) prebuild-x64 --no-print-directory
+	@echo "Agent beacon source built"
+
+beacon: agent
+
+clean:
+	@echo "Cleaning build artifacts..."
+	@rm -rf $(DIST_DIR)
+	@$(MAKE) -C $(SRC_BEACON) clean --no-print-directory || true
+	@echo "Clean complete"
+
+.SILENT: help

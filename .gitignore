@@ -1,7 +1,9 @@
 *.o
+*.obj
 *.exe
 *.dll
 *.bin
+*.so
 
 .vscode
 .zed

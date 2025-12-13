@@ -131,6 +131,9 @@ function RegisterCommands(listenerType)
     let cmd_config_ppid = ax.create_command("ppid", "Set the parent process ID for process spoofing", "config ppid 808", "Task: configure parent process ID");
     cmd_config_ppid.addArgInt("pid", true);
 
+    let cmd_config_argue = ax.create_command("argue", "Set the argument to spoof in process creation routine", "config argue <false_argument_here>", "Task: configure argument to spoof");
+    cmd_config_argue.addArgString("argument", true);
+
     let cmd_config_blockdll = ax.create_command("blockdlls", "Block non-Microsoft DLLs from loading in child processes", "config blockdlls true", "Task: configure DLL blocking");
     cmd_config_blockdll.addArgString("status", true, "Enable (true) or disable (false)");
 
@@ -178,30 +181,13 @@ function RegisterCommands(listenerType)
     cmd_config_forkpipe.addArgString("name", true);
 
     let cmd_config_subcommands = [
-        cmd_config_sleep, cmd_config_jitter, cmd_config_ppid, cmd_config_blockdll, cmd_config_wkrtime,
+        cmd_config_sleep, cmd_config_jitter, cmd_config_ppid, cmd_config_argue, cmd_config_blockdll, cmd_config_wkrtime,
         cmd_config_killdate_date, cmd_config_killdate_exit, cmd_config_killdate_selfdel, 
         cmd_config_heap_obf, cmd_config_mask, cmd_config_amsietwbypass, cmd_config_spawnto,
         cmd_config_inject_type, cmd_config_inject_stomp, cmd_config_inject_alloc, cmd_config_inject_write, cmd_config_syscall, cmd_config_forkpipe
     ];
 
-    if (listenerType == "KharonHTTP") {
-        let cmd_config_callbackhost = ax.create_command("callback.http.host", "Change the callback host list for http profile (use 'info' command to show callback settings)", "config callback.http.host add server1337.com:443");
-        cmd_config_callbackhost.addArgString("action", true);
-        cmd_config_callbackhost.addArgString("callback_host", true);
-
-        let cmd_config_callbackuseragent = ax.create_command("callback.http.useragent", "Change the callback user agent settings for http profile (use 'info' command to show callback settings)", "config callback.http.useragent Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36");
-        cmd_config_callbackuseragent.addArgString("useragent", true);
-
-        let cmd_config_callbackproxy = ax.create_command("callback.http.proxy", "Change the callback proxy settings for http profile (use 'info' command to show callback settings)", "config callback.http.proxy enabled http://serverproxy:8080 username password");
-        cmd_config_callbackproxy.addArgBool("enabled", true);
-        cmd_config_callbackproxy.addArgString("url", false);
-        cmd_config_callbackproxy.addArgString("username", false);
-        cmd_config_callbackproxy.addArgString("password", false);
-
-        cmd_config_subcommands.push(cmd_config_callbackhost);
-        cmd_config_subcommands.push(cmd_config_callbackuseragent);
-        cmd_config_subcommands.push(cmd_config_callbackproxy);
-    }
+    if (listenerType == "KharonHTTP") {}
 
     let cmd_config = ax.create_command("config", "Configuration management - adjust beacon behavior and settings", "config sleep 50s");
     cmd_config.addSubCommands(cmd_config_subcommands);

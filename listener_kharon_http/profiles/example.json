@@ -1,0 +1,86 @@
+ {
+    "callback": [
+    {
+        "host": "server2.com:443",
+        "config": {
+            "block_useragents": ["wget", "powershell", "curl"],
+            "trust_x_forwarded_for": false
+        },
+        "get": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "uris": ["/route10", "/route20"],
+            "server": {
+                "headers": {
+                    "Content-Type": "application/json; charset=utf-8",
+                    "Server": "Apache/2.4.41",
+                    "Cache-Control": "no-store, no-cache, must-revalidate",
+                    "X-Powered-By": "Express",
+                    "X-RateLimit-Limit": "1000",
+                    "X-RateLimit-Remaining": "998",
+                    "X-RateLimit-Reset": "1704110400",
+                    "X-Request-ID": "req_abc123def456"
+                },
+                "output": [  
+                    {"mask": true, "format": "base64", "uri": "/route20"} ],
+                "error": {
+                    "http_status": 401,
+                    "response": ""
+                }
+            },
+            "client": {
+                "parameters": {"gath": "AAAAAA", "math": "BBBBBB"},
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "Cache-Control": "no-cache"
+                },
+                "output": [
+                    {"parameter": "info", "uri": "/route10"},
+                    {"append": ""},
+                    {"prepend": ""},
+                    {"mask": true},
+                    {"format": "base64"}
+                ]
+            }
+        },
+        "post": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "uris": ["/route1", "/route2"],
+            "server": {
+                "headers": {
+                    "Content-Type": "application/json; charset=utf-8",
+                    "Server": "Apache/2.4.41",
+                    "Cache-Control": "no-store, no-cache, must-revalidate",
+                    "X-Powered-By": "Express",
+                    "X-RateLimit-Limit": "1000",
+                    "X-RateLimit-Remaining": "997",
+                    "X-RateLimit-Reset": "1704110400",
+                    "X-Request-ID": "req_abc123def456",
+                    "Location": "https://api.example.com/resource/123"
+                },
+                "output": {
+                    "parameter": "info"
+                },
+                "error": {
+                    "http_status": 400,
+                    "response": ""
+                }
+            },
+            "client": {
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "Cache-Control": "no-cache",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                "output": {
+                    "append": "",
+                    "prepend": "PHPSESSID=",
+                    "header": "Cookie"
+                }
+            }
+        }
+    }
+]}
