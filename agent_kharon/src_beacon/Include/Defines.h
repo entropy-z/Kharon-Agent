@@ -69,7 +69,7 @@
 #define DECLFN        __attribute__( ( section( ".text$B" ) ) )
 
 #define G_PARSER          Self->Psr->Shared
-#define G_PACKAGE         Self->Pkg->Global
+#define G_PACKAGE         Self->Pkg->Shared
 #define BEG_BUFFER_LENGTH  0x1000
 #define PIPE_BUFFER_LENGTH 0x10000
 

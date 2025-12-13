@@ -30,4 +30,11 @@ struct _SMB_PROFILE_DATA {
 
     _SMB_PROFILE_DATA* Next;
 };
+
+enum class Base64Action {
+    GET_SIZE,
+    ENCODE,
+    DECODE
+};
+
 typedef _SMB_PROFILE_DATA SMB_PROFILE_DATA;
