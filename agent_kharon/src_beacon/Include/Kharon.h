@@ -2258,59 +2258,6 @@ public:
     ) -> BOOL;
 };
 
-typedef struct _SOCKET_CTX {
-    ULONG  ServerID;
-    SOCKET Socket;
-
-    struct _SOCKET_CTX* Next;
-} SOCKET_CTX, *PSOCKET_CTX;
-
-class Socket {
-private:
-    Root::Kharon* Self;
-public:
-    Socket( Root::Kharon* KharonRf ) : Self( KharonRf ) {};
-
-    BOOL        Initialized = FALSE;
-    ULONG       Count = 0;
-    PSOCKET_CTX Ctx   = nullptr;
-
-    auto Exist( 
-        _In_ ULONG ServerID 
-    ) -> BOOL;
-
-    auto DECLFN ParseHeader(
-        BYTE* data,
-        ULONG dataLen,
-        ULONG& headerSize,
-        ULONG& targetIP,
-        USHORT& targetPort
-    ) -> BOOL;
-
-    auto Add(
-        _In_ ULONG  ServerID,
-        _In_ SOCKET Socket
-    ) -> ERROR_CODE;
-
-    auto Get(
-        _In_ ULONG  ServerID
-    ) -> SOCKET;
-
-    auto RmCtx(
-        _In_ ULONG ServerID
-    ) -> ERROR_CODE;
-
-    auto InitWSA( VOID ) -> BOOL;
-
-    auto RecvAll( SOCKET Socket, PVOID Buffer, DWORD Length, PDWORD BytesRead ) -> BOOL;
-
-    auto LogData(
-        _In_ const char* description,
-        _In_ const BYTE* data,
-        _In_ ULONG length
-    ) -> VOID;
-};
-
 class Injection {
 private:
     Root::Kharon* Self;
